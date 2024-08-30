@@ -1,8 +1,9 @@
 <script setup>
 import { ref } from "vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, Link, router } from "@inertiajs/vue3";
+import { Head, Link, usePage } from "@inertiajs/vue3";
 
+const page = usePage();
 const props = defineProps(["games"]);
 
 const games = ref(props.games.data);
@@ -15,8 +16,12 @@ Echo.private("lobby")
     .listen("GameCreated", (e) => {
         console.log(e);
 
-        //Add to the FRONT of the list:
-        games.value.unshift(e.game);
+        if (e.game.player_one_id !== page.props.auth.user.id) {
+            // Add to the FRONT of the list:
+            games.value.unshift(e.game);
+        } else {
+            console.log("I am player one");
+        }
     });
 </script>
 
