@@ -15,6 +15,10 @@ class Game extends Model
         'player_two_id',
     ];
 
+    protected $with = [
+        'playerOne',
+    ];
+
     protected $appends = [
         'human_timestamp',
     ];
