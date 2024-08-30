@@ -1,8 +1,15 @@
 <script setup>
+import { ref } from "vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head, Link } from "@inertiajs/vue3";
 
 const props = defineProps(["games"]);
+
+const games = ref(props.games.data);
+
+Echo.private("lobby").listen("GameJoined", (e) => {
+    games.value = games.value.filter((game) => game.id !== e.game.id);
+});
 </script>
 
 <template>
@@ -40,7 +47,7 @@ const props = defineProps(["games"]);
                     <ul class="divide-y divide-gray-200">
                         <li
                             class="py-3 px-2 flex justify-between items-center"
-                            v-for="game in games.data"
+                            v-for="game in games"
                             :key="game.id"
                         >
                             <span class="flex flex-col">
