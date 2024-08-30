@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, Link } from "@inertiajs/vue3";
+import { Head, Link, router } from "@inertiajs/vue3";
 
 const props = defineProps(["games"]);
 
@@ -9,6 +9,14 @@ const games = ref(props.games.data);
 
 Echo.private("lobby").listen("GameJoined", (e) => {
     games.value = games.value.filter((game) => game.id !== e.game.id);
+
+    // When one is removed, check whether to re-fetch. We could make a second pusher event for this if wanted
+    if (games.value.length < 5) {
+        router.reload({
+            only: ["games"],
+            onSuccess: () => (games.value = props.games.data),
+        });
+    }
 });
 </script>
 
