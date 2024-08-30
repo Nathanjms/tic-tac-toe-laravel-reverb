@@ -7,17 +7,17 @@ const props = defineProps(["games"]);
 
 const games = ref(props.games.data);
 
-Echo.private("lobby").listen("GameJoined", (e) => {
-    games.value = games.value.filter((game) => game.id !== e.game.id);
+Echo.private("lobby")
+    .listen("GameJoined", (e) => {
+        console.log(e);
+        games.value = games.value.filter((game) => game.id !== e.game.id);
+    })
+    .listen("GameCreated", (e) => {
+        console.log(e);
 
-    // When one is removed, check whether to re-fetch. We could make a second pusher event for this if wanted
-    if (games.value.length < 5) {
-        router.reload({
-            only: ["games"],
-            onSuccess: () => (games.value = props.games.data),
-        });
-    }
-});
+        //Add to the FRONT of the list:
+        games.value.unshift(e.game);
+    });
 </script>
 
 <template>
