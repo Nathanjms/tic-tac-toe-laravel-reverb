@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\GameCreated;
 use App\Events\GameJoined;
+use App\Events\PlayerMadeMove;
 use App\Models\Game;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -81,7 +82,18 @@ class GameController extends Controller
      */
     public function update(Request $request, Game $game)
     {
-        //
+        $request->validate([
+            'state' => 'required|array|size:9',
+            'state.*' => 'numeric|integer|between:-1,1',
+        ]);
+
+        $game->update([
+            'state' => $request->state,
+        ]);
+
+        broadcast(new PlayerMadeMove($game))->toOthers();
+
+        return to_route('games.show', $game);
     }
 
     /**

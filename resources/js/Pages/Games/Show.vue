@@ -10,7 +10,7 @@ const props = defineProps({
     game: Object,
 });
 
-const boardState = ref([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+const boardState = ref(props.game.state ?? [0, 0, 0, 0, 0, 0, 0, 0, 0]);
 const gameState = useGameState();
 const players = ref([]);
 
@@ -34,6 +34,10 @@ const lines = [
 
 const fillSquare = (index) => {
     boardState.value[index] = xTurn.value ? -1 : 1;
+
+    router.put(route("games.update", props.game.id), {
+        state: boardState.value,
+    });
 
     checkForVictory();
 };
@@ -78,6 +82,9 @@ Echo.join(`games.${props.game.id}`)
     })
     .leaving((user) => {
         players.value = players.value.filter(({ id }) => id !== user.id);
+    })
+    .listen("PlayerMadeMove", (e) => {
+        boardState.value = e.game.state;
     });
 
 onUnmounted(() => {

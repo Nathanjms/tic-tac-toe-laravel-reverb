@@ -13,10 +13,11 @@ class Game extends Model
     protected $fillable = [
         'player_one_id',
         'player_two_id',
+        'state',
     ];
 
-    protected $with = [
-        'playerOne',
+    protected $casts = [
+        'state' => 'array',
     ];
 
     protected $appends = [
