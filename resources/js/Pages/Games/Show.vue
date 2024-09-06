@@ -1,5 +1,5 @@
 <script setup>
-import { router } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { computed, onUnmounted, ref } from "vue";
 import Modal from "@/Components/Modal.vue";
@@ -10,6 +10,8 @@ const props = defineProps({
     game: Object,
 });
 
+const page = usePage();
+
 const boardState = ref(props.game.state ?? [0, 0, 0, 0, 0, 0, 0, 0, 0]);
 const gameState = useGameState();
 const players = ref([]);
@@ -17,6 +19,14 @@ const players = ref([]);
 const xTurn = computed(
     () => boardState.value.reduce((carry, value) => carry + value, 0) === 0
 );
+
+const isYourTurn = computed(() => {
+    if ((props.game.player_one_id === page.props.auth.user.id)) {
+        return xTurn.value;
+    } else {
+        return !xTurn.value;
+    }
+});
 
 const lines = [
     // rows
@@ -33,6 +43,9 @@ const lines = [
 ];
 
 const fillSquare = (index) => {
+    if (!isYourTurn.value) {
+        return;
+    }
     boardState.value[index] = xTurn.value ? -1 : 1;
 
     router.put(route("games.update", props.game.id), {
@@ -61,12 +74,19 @@ const checkForVictory = () => {
 
     if (!boardState.value.includes(0)) {
         gameState.change(gameStates.Stalemate);
+        return;
     }
+
+    gameState.change(gameStates.InProgress);
 };
 
 const resetGame = () => {
     boardState.value = [0, 0, 0, 0, 0, 0, 0, 0, 0];
     gameState.change(gameStates.InProgress);
+
+    router.put(route("games.update", props.game.id), {
+        state: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    });
 };
 
 Echo.join(`games.${props.game.id}`)
@@ -85,6 +105,8 @@ Echo.join(`games.${props.game.id}`)
     })
     .listen("PlayerMadeMove", (e) => {
         boardState.value = e.game.state;
+
+        checkForVictory();
     });
 
 onUnmounted(() => {
@@ -94,10 +116,10 @@ onUnmounted(() => {
 
 <template>
     <AuthenticatedLayout>
-        <menu class="grid grid-cols-3 gap-1.5 w-0 min-w-fit mx-auto mt-12">
+        <menu class="grid grid-cols-3 w-0 min-w-fit mx-auto mt-12 border border-gray-400">
             <li
                 v-for="(square, index) in boardState"
-                class="bg-gray-300 size-32 grid place-items-center"
+                class="bg-gray-300 size-32 grid place-items-center border border-gray-400"
             >
                 <button
                     @click="fillSquare(index)"
