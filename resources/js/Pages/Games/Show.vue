@@ -21,7 +21,7 @@ const xTurn = computed(
 );
 
 const isYourTurn = computed(() => {
-    if ((props.game.player_one_id === page.props.auth.user.id)) {
+    if (props.game.player_one_id === page.props.auth.user.id) {
         return xTurn.value;
     } else {
         return !xTurn.value;
@@ -116,7 +116,9 @@ onUnmounted(() => {
 
 <template>
     <AuthenticatedLayout>
-        <menu class="grid grid-cols-3 w-0 min-w-fit mx-auto mt-12 border border-gray-400">
+        <menu
+            class="grid grid-cols-3 w-0 min-w-fit mx-auto mt-12 border border-gray-400"
+        >
             <li
                 v-for="(square, index) in boardState"
                 class="bg-gray-300 size-32 grid place-items-center border border-gray-400"
@@ -136,7 +138,11 @@ onUnmounted(() => {
 
         <ul class="max-w-sm mx-auto mt-6 space-y-2 flex justify-between">
             <li class="flex items-center">
-                <span class="px-1.5 font-bold rounded bg-gray-200">X</span>
+                <span
+                    class="px-1.5 font-bold rounded bg-gray-200"
+                    :class="{ 'bg-green-200': xTurn }"
+                    >X</span
+                >
                 <span>{{ game.player_one?.name }}</span>
                 <span
                     :class="{
@@ -148,7 +154,11 @@ onUnmounted(() => {
                 ></span>
             </li>
             <li v-if="game.player_two" class="flex items-center">
-                <span class="p-1.5 font-bold rounded bg-gray-200">O</span>
+                <span
+                    class="p-1.5 font-bold rounded bg-gray-200"
+                    :class="{ 'bg-green-200': !xTurn }"
+                    >O</span
+                >
                 <span>{{ game.player_two?.name }}</span>
                 <span
                     :class="{
