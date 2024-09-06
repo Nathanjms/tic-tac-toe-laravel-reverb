@@ -55,7 +55,7 @@ class GameController extends Controller
 
         GameJoined::dispatch($game);
 
-        return to_route('games.show', $game);
+        return to_route('games.show', $game->fresh(['playerOne', 'playerTwo']));
     }
 
     /**
@@ -63,6 +63,8 @@ class GameController extends Controller
      */
     public function show(Game $game)
     {
+        $game->load(['playerOne', 'playerTwo']);
+
         return inertia('Games/Show', compact('game'));
     }
 

@@ -1,17 +1,20 @@
 <script setup>
-import { ref } from "vue";
+import { router } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { computed } from "vue";
-import { useGameState, gameStates } from "@/Composables/useGameState";
+import { computed, ref } from "vue";
+import Modal from "@/Components/Modal.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
+import { useGameState, gameStates } from "@/Composables/useGameState.js";
 
-const props = defineProps(["game"]);
+const props = defineProps({
+    game: Object,
+});
 
-// Crosses are -1, noughts are 1
 const boardState = ref([0, 0, 0, 0, 0, 0, 0, 0, 0]);
-
 const gameState = useGameState();
+const players = ref([]);
 
-const isXTurn = computed(
+const xTurn = computed(
     () => boardState.value.reduce((carry, value) => carry + value, 0) === 0
 );
 
@@ -30,9 +33,12 @@ const lines = [
 ];
 
 const fillSquare = (index) => {
-    boardState.value[index] = isXTurn.value ? -1 : 1;
+    boardState.value[index] = xTurn.value ? -1 : 1;
 
-    // Check for a win;
+    checkForVictory();
+};
+
+const checkForVictory = () => {
     const winningLine = lines
         .map((line) =>
             line.reduce((carry, index) => carry + boardState.value[index], 0)
@@ -40,31 +46,36 @@ const fillSquare = (index) => {
         .find((sum) => Math.abs(sum) === 3);
 
     if (winningLine === -3) {
-        alert("X wins!");
-        resetBoard();
+        gameState.change(gameStates.XWins);
         return;
     }
 
     if (winningLine === 3) {
-        alert("O wins!");
-        resetBoard();
+        gameState.change(gameStates.OWins);
         return;
     }
 
-    if (boardState.value.every((square) => square !== 0)) {
-        alert("Draw!");
-        resetBoard();
-        return;
+    if (!boardState.value.includes(0)) {
+        gameState.change(gameStates.Stalemate);
     }
 };
 
-const resetBoard = () => {
+const resetGame = () => {
     boardState.value = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-
     gameState.change(gameStates.InProgress);
 };
 
-Echo.join(`game.${props.game.id}`).here((users) => {});
+Echo.join(`games.${props.game.id}`)
+    .here((users) => {
+        players.value = users;
+    })
+    .joining((user) => {
+        router.reload({
+            onSuccess: () => {
+                players.value.push(user);
+            }
+        })
+    })
 </script>
 
 <template>
@@ -72,15 +83,18 @@ Echo.join(`game.${props.game.id}`).here((users) => {});
         <menu class="grid grid-cols-3 gap-1.5 w-0 min-w-fit mx-auto mt-12">
             <li
                 v-for="(square, index) in boardState"
-                :key="square"
-                class="bg-gray-300 size-32 grid place-items-center text-4xl"
+                class="bg-gray-300 size-32 grid place-items-center"
             >
                 <button
+                    @click="fillSquare(index)"
                     v-if="square === 0"
-                    @click="() => fillSquare(index)"
                     class="place-self-stretch bg-gray-200 hover:bg-gray-300 transition-colors"
                 ></button>
-                <span v-else>{{ square === -1 ? "X" : "O" }}</span>
+                <span
+                    v-else
+                    v-text="square === -1 ? 'X' : 'O'"
+                    class="text-4xl font-bold"
+                ></span>
             </li>
         </menu>
 
@@ -99,5 +113,30 @@ Echo.join(`game.${props.game.id}`).here((users) => {});
                 <span>Waiting for player 2</span>
             </li>
         </ul>
+        <Modal @close="resetGame()" :show="gameState.hasEnded()">
+            <div class="p-6">
+                <div
+                    class="text-6xl font-bold text-center my-12 font-mono uppercase"
+                >
+                    <span
+                        v-if="gameState.current() === gameStates.XWins"
+                        class="text-green-600"
+                        >X has won!</span
+                    >
+                    <span
+                        v-else-if="gameState.current() === gameStates.OWins"
+                        class="text-green-600"
+                        >O has won!</span
+                    >
+                    <span v-else class="text-orange-600">Stalemate!</span>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <PrimaryButton @click="resetGame()"
+                        >Play Again</PrimaryButton
+                    >
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>

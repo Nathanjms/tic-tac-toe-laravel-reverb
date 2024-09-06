@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { onUnmounted, ref } from "vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head, Link, usePage } from "@inertiajs/vue3";
 
@@ -23,6 +23,10 @@ Echo.private("lobby")
             console.log("I am player one");
         }
     });
+
+onUnmounted(() => {
+    Echo.leave("lobby");
+});
 </script>
 
 <template>
