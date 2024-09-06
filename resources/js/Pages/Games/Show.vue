@@ -1,7 +1,7 @@
 <script setup>
 import { router } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { computed, ref } from "vue";
+import { computed, onUnmounted, ref } from "vue";
 import Modal from "@/Components/Modal.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import { useGameState, gameStates } from "@/Composables/useGameState.js";
@@ -73,9 +73,16 @@ Echo.join(`games.${props.game.id}`)
         router.reload({
             onSuccess: () => {
                 players.value.push(user);
-            }
-        })
+            },
+        });
     })
+    .leaving((user) => {
+        players.value = players.value.filter(({ id }) => id !== user.id);
+    });
+
+onUnmounted(() => {
+    Echo.leave(`games.${props.game.id}`);
+});
 </script>
 
 <template>
@@ -102,12 +109,26 @@ Echo.join(`games.${props.game.id}`)
             <li class="flex items-center">
                 <span class="px-1.5 font-bold rounded bg-gray-200">X</span>
                 <span>{{ game.player_one?.name }}</span>
-                <span class="bg-red-500 size-2 rounded-full"></span>
+                <span
+                    :class="{
+                        '!bg-green-500': players.find(
+                            ({ id }) => id === game.player_one?.id
+                        ),
+                    }"
+                    class="bg-red-500 size-2 rounded-full"
+                ></span>
             </li>
             <li v-if="game.player_two" class="flex items-center">
                 <span class="p-1.5 font-bold rounded bg-gray-200">O</span>
                 <span>{{ game.player_two?.name }}</span>
-                <span class="bg-red-500 size-2 rounded-full"></span>
+                <span
+                    :class="{
+                        '!bg-green-500': players.find(
+                            ({ id }) => id === game.player_two?.id
+                        ),
+                    }"
+                    class="bg-red-500 size-2 rounded-full"
+                ></span>
             </li>
             <li v-else>
                 <span>Waiting for player 2</span>
