@@ -92,7 +92,7 @@ killasgroup=true
 numprocs=1
 minfds=10000
 redirect_stderr=true
-stdout_logfile=/var/www/html/storage/logs/reverb.log
+stdout_logfile=/app/storage/logs/reverb.log
 stopwaitsecs=3600
 stdout_logfile_maxbytes=5MB
 '''
