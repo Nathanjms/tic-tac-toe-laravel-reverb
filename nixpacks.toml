@@ -8,6 +8,7 @@ cmds = [
     "cp /assets/supervisord.conf /etc/supervisord.conf",
     "chmod +x /assets/start.sh",
     "chmod -R 775 storage && chmod -R 775 bootstrap/cache",
+    "..."
 ]
 
 [start]
