@@ -17,6 +17,8 @@ cmd = '/assets/start.sh'
 "start.sh" = '''
 #!/bin/bash
 
+chmod -R 775 storage && chmod -R 775 bootstrap/cache"
+
 # Transform the nginx configuration
 node /assets/scripts/prestart.mjs /assets/nginx.template.conf /etc/nginx.conf
 
