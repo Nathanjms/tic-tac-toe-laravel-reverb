@@ -6,14 +6,14 @@ cmds = [
     "chmod +x /assets/start.sh",
     "php artisan migrate --force",
     "php artisan optimize:clear",
-    "..."
+    "...",
 ]
 
 [start]
-cmd = '/assets/start.sh'
+cmds = ["/assets/exra.sh", "..."]
 
 [staticAssets]
-"start.sh" = '''
+"extra.sh" = '''
 #!/bin/bash
 
 PHP_INI_PATH=$(php -i | grep '/php.ini' | awk '{print $6}')
