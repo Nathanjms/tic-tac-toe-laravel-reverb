@@ -23,6 +23,9 @@ node /assets/scripts/prestart.mjs /assets/nginx.template.conf /etc/nginx.conf
 
 # Start supervisor
 supervisord -c /etc/supervisord.conf -n
+
+#Run Laravel artisan commands
+php artisan migrate && php aritsan optimize:clear && php artisan storage:link
 '''
 
 "supervisord.conf" = '''
@@ -106,10 +109,10 @@ group = www-data
 listen.owner = www-data
 listen.group = www-data
 pm = dynamic
-pm.max_children = 50
-pm.min_spare_servers = 4
-pm.max_spare_servers = 32
-pm.start_servers = 18
+pm.max_children = 20
+pm.start_servers = 2
+pm.min_spare_servers = 1
+pm.max_spare_servers = 3
 clear_env = no
 '''
 
