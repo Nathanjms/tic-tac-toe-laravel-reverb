@@ -4,6 +4,8 @@ nixPkgs = ["...", "python311Packages.supervisor"]
 [phases.build]
 cmds = [
     "chmod +x /assets/start.sh",
+    "php artisan migrate --force",
+    "php artisan optimize:clear",
     "..."
 ]
 
